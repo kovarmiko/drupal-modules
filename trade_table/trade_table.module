@@ -93,7 +93,6 @@ function trade_table_field_formatter_view($entity_type, $entity, $field, $instan
   switch ($display['type']) {
     // This formatter simply outputs the field as text and with a color.
     case 'trade_table_table':   
-    $key = range(1,6);      
       foreach ($items as $delta => $item) {
         $reward_to_risk = (abs($item['take_profit'] - $item['entry'])) / (abs($item['stop_loss'] - $item['entry']));
         $reward_to_risk = number_format($reward_to_risk, 2);  
