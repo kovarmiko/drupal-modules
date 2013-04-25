@@ -1,0 +1,5 @@
+name = Trade Table
+description = A Field that outputs a table of trade orders provided by users
+package = FX Trade
+core = 7.x
+files[] = trade_table.module

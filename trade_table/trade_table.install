@@ -1,0 +1,44 @@
+<?php
+/**
+ * Implements hook_field_schema().
+ *
+ * Pseudo-hook.
+ *
+ */
+function trade_table_field_schema($field) {
+  if ($field['type'] == 'fx_order_table') {
+    $schema['columns']['pair'] = array(
+      'type' => 'char',
+      'length' => 7,
+      'not null' => FALSE,
+    );    
+    $schema['columns']['entry'] = array(
+      'type' => 'float',
+      'not null' => FALSE,
+      
+    );
+    $schema['columns']['stop_loss'] = array(
+      'type' => 'float',
+      'not null' => FALSE,
+      
+    );
+    $schema['columns']['take_profit'] = array(
+      'type' => 'float',
+      'not null' => FALSE,
+      
+    );
+    $schema['columns']['reward_to_risk'] = array(
+      'type' => 'float',
+      'not null' => FALSE,
+      
+    );
+    $schema['indexes'] = array(
+      'pair' => array('pair'),
+      'entry' => array('entry'),
+      'stop_loss' => array('stop_loss'),    
+      'take_profit' => array('take_profit'),    
+      'reward_to_risk' => array('reward_to_risk'),
+    );
+    return $schema;
+  }
+}

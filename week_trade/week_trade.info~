@@ -1,0 +1,3 @@
+name = Week Trade
+description = A module that enables users to build trade of the week blocks.
+core = 7.x

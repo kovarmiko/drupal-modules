@@ -1,0 +1,51 @@
+<?php
+/**
+ * Implements hook_field_schema().
+ *
+ * Pseudo-hook.
+ *
+ */
+function trade_table_schema($field) {
+  if ($field['type'] == 'trade_table') {
+    $schema['columns']['pair'] = array(
+      'type' => 'text',
+      'size' => 'tiny',
+      'not null' => FALSE,
+    );    
+    $schema['columns']['entry'] = array(
+      'type' => 'numeric',
+      'precision' => 4,
+      'scale' => 4,
+      'not null' => FALSE,
+      'unsigned' => TRUE,
+    );
+    $schema['columns']['stop_loss'] = array(
+      'type' => 'numeric',
+      'precision' => 4,
+      'scale' => 4,
+      'not null' => FALSE,
+      'unsigned' => TRUE,
+    );
+    $schema['columns']['take_profit'] = array(
+      'type' => 'numeric',
+      'precision' => 4,
+      'scale' => 4,
+      'not null' => FALSE,
+      'unsigned' => TRUE,
+    );
+    $schema['columns']['risk_to_reward'] = array(
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => FALSE,
+      'unsigned' => TRUE,
+    );
+    $schema['indexes'] = array(
+      'pair' => array('pair'),
+      'open' => array('open'),
+      'stop_loss' => array('stop_loss'),    
+      'take_profit' => array('take_profit'),    
+      'risk_to_reward' => array('risk_to_reward'),
+    );
+    return $schema;
+  }
+}

@@ -1,0 +1,208 @@
+<?php
+
+/**
+ * Implements hook_field_info().
+ */
+ 
+
+function trade_table_field_info() {
+  return array(
+    // We name our field as the associative name of the array.
+    'fx_order_table' => array(
+      'label' => t('FX Order Table'),
+      'description' => t('This field enables traders to input values of their trade orders '),
+      'default_formatter' => 'trade_table_table',
+      'default_widget' => 'trade_table_texts',
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_is_empty().
+ *
+ * Pseudo-hook.
+ */
+function trade_table_field_is_empty($item, $field) {
+  if ($field['type'] == 'fx_order_table') {
+    if (empty($item['entry']) && empty($item['stop_loss']) && empty($item['take_profit']) && ($item['pair'] == 'none')) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_field_validate().
+ *
+ */
+function trade_table_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+  foreach ($items as $delta => $item) {
+    if (!trade_table_field_is_empty($item, $field)) {
+      if (!is_numeric($item['entry']) || !is_numeric($item['stop_loss']) || !is_numeric($item['take_profit']) || ($item['pair'] == 'none')) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+          'error' => 'trade_table_bad_input_type', //is not anywhere defined
+          'message' => t('All input fields are required'),
+        );
+      } 
+    }
+  }
+}
+
+///////////////////// Formatters ////////////////////////////
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function trade_table_field_formatter_info() {
+  return array(
+    // This formatter just displays the table out of the collected values
+    'trade_table_table' => array(
+      'label' => t('Trade table formatter'),
+      'field types' => array('fx_order_table'),
+    ),    
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ *
+ * @see trade_table_field_formatter_info()
+ */
+function trade_table_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+
+  switch ($display['type']) {
+    // This formatter simply outputs the field as text and with a color.
+    case 'trade_table_table':
+          
+      foreach ($items as $delta => $item) {
+        $row = array();
+        
+        $reward_to_risk = (abs($item['take_profit'] - $item['entry'])) / (abs($item['stop_loss'] - $item['entry']));
+        $reward_to_risk = number_format($reward_to_risk, 2);
+          
+          $row[] = t('@value', array(
+            '@value' => (string)$item['pair'],
+          ));
+         
+          $row[] = t('@value', array(
+            '@value' => (float)$item['entry'],            
+          ));
+         
+          $row[] = t('@value', array(
+            '@value' => (float)$item['stop_loss'],
+          ));  
+
+          $row[] = t('@value', array(
+              '@value' => (float)$item['take_profit'],                
+          ));
+          
+          $row[] = t('@value', array(
+              '@value' => $reward_to_risk,              
+          ));
+          }
+        $header = array('Pair', 'Entry Price', 'Stop Loss', 'Take Profit', 'Reward-to-Risk');  
+
+      $element = theme('table', array('header' => $header, 'rows' => array( 'data' => $row )));
+      );
+      break;
+  }
+
+  return $element;
+}
+      	
+///////////////// Widgets ///////////////////////
+
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function trade_table_field_widget_info() {
+  return array(
+    'trade_table_texts' => array(
+      'label' => t('Separate text fields'), //this its displayed in 'widget type' tab of field settings site 
+      'description' => t('Allow the user to enter trade orders separately.'),
+      'field types' => array('fx_order_table'),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+        'default value' => FIELD_BEHAVIOR_DEFAULT,
+        ),
+    ),
+  );
+}
+ 
+ /**
+ * Implements hook_field_widget_form().
+ *
+ * Pseudo-hook.
+ */
+function trade_table_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $base = $element;
+
+  if ($instance['widget']['type'] == 'trade_table_texts') {
+    $element['pair'] = array(
+      '#type' => 'select',
+      '#options' => fxoptions(),
+      '#title' => t('FX pair'),
+      '#default_value' => 'EUR/USD',
+      '#weight' => -4,
+      
+    ) + $base;
+    $element['entry'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Entry price'),
+      '#size' => 10,
+      '#default_value' => NULL,
+      
+      '#weight' => -3,
+    ) + $base;
+    $element['stop_loss'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Stop Loss'),
+      '#size' => 10,
+      '#default_value' => NULL,
+      
+      '#weight' => -2,
+    ) + $base;
+    $element['take_profit'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Take Profit'),
+      '#size' => 10,
+      '#default_value' => NULL,
+      
+      '#weight' => -1,
+    ) + $base;     
+  }
+return $element;
+
+}
+
+
+/**
+ * Our options table for $element['pair']
+ */
+
+function fxoptions(){
+    return array('none', 'EUR/USD', 'USD/JPY', 'GBP/USD', 'AUD/USD', 'USD/CHF', 'NZD/USD');
+  }
+
+/**
+ * Custom validation function for field_widget_form
+ *
+ */
+ 
+ function trade_table_field_widget_form_validate ($element, &$form_state) {
+  $values = array();
+  $values[] = (float)$form_state['values'] ['entry'];
+ 	 $values[] = (float)$form_state['values'] ['stop_loss'];
+ 	 $values[] = (float)$form_state['values'] ['take_profit'];
+  $allowed = array('none', 'EUR/USD', 'USD/JPY', 'GBP/USD', 'AUD/USD', 'USD/CHF', 'NZD/USD');
+ 	 if(!in_array($form_state['values']['pair'], $allowed)){
+     form_set_error('pair', t('You must enter a valid Pair.'));
+ 	 	  }
+ 	 foreach ($values as $value) {
+    if (!is_numeric($value) || ($value <= 0 )) {
+      form_set_error($value, t('The "!name" option must contain a valid value for the given pair.'), array('!name' => t($value)));
+    }
+  }      
+}

@@ -1,0 +1,110 @@
+<?php
+/**
+* Implements hook_help.
+*
+* Displays help and module information.
+*
+* @param path
+*   Which path of the site we're using to display help
+* @param arg
+*   Array that holds the current path as returned from arg() function
+*/
+function week_trade_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#week_trade":
+      return '<p>' . t("This module creates trade of the week block and has a configuration setting at admin/structure/block") . '</p>';
+      break;
+  }
+}
+
+/**
+* Implements hook_block_info().
+*/
+function week_trade_block_info() {
+  $blocks['week_trade'] = array(
+    'info' => t('Trade of the week'), //The name that will appear in the block list.
+    'cache' => DRUPAL_CACHE_PER_ROLE, //Default
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ * 
+ *
+ *
+ */
+
+
+ 
+/**
+ * Implements hook_block_configure().
+ *
+ * This hook declares configuration options for blocks provided by this module.
+ */
+function week_trade_block_configure($delta = '') {
+  $form = array();
+  if ($delta == 'week_trade') {
+     $form['week_trade_pair'] = array(
+      '#type' => 'select',
+      '#options' => forex_options(),
+      '#title' => t('Currency pairs (Majors)'),
+      '#default_value' => variable_get('week_trade_pair'),
+      '#description' => t('Select your currency carefully, Site\'s reputation is at stake!'),
+      '#required' => TRUE,
+    );
+    $form['week_trade_direction'] = array(
+      '#type' => 'select',
+      '#options' => array ('Long', 'Short'),
+      '#title' => t('Direction of the trade'),
+      '#default_value' => variable_get('week_trade_direction'),
+      '#description' => t('Bull or Bear?'),
+      '#required' => TRUE,
+    ); 
+  }
+  return $form;
+}
+  
+function forex_options() {
+  return array ('none', 'EUR/USD', 'USD/JPY', 'GBP/USD', 'USD/CHF', 'USD/CAD', 'EUR/JPY', 'AUD/USD',); 	
+ }
+/**
+ * Implements hook_block_save().
+ *
+ * This hook declares how the configured options for a block
+ * provided by this module are saved.
+ */
+function week_trade_block_save($delta = '', $edit = array()) {
+  // We need to save settings from the configuration form.
+  // We need to check $delta to make sure we are saving the right block.
+  if ($delta == 'week_trade') {
+    // Have Drupal save the string to the database.
+    variable_set('week_trade_pair', $edit['week_trade_pair']);
+    variable_set('week_trade_direction', $edit['week_trade_direction']);
+  }
+  return;
+}
+
+function week_trade_block_view($delta = '') {
+  if ($delta == 'week_trade'){
+    $block['subject'] = t('Trade of the Week');
+      
+   //this is to retrieve our settings from the function
+    $direction = variable_get('week_trade_direction');
+    $pair = variable_get('week_trade_pair');
+   
+   if ($pair == 'none') { //No content in the last week.
+          $block['content'] = t('We don\'t recommend trading currencies this week'); 
+        } else {
+		$rows = array();
+        	$rows[] = $direction;
+        	$rows[] = $pair;
+         $header = array('Direction', 'Pair',);        	  
+        	  foreach ($rows as $row){ 
+           //Pass data through theme function.
+           $block['content'] = theme('table', array('header' => $header, 'rows' => $row,));
+           }       
+        }
+      }   
+    return $block;
+ }
