@@ -163,7 +163,7 @@ function trade_table_field_widget_form(&$form, &$form_state, $field, $instance, 
     
     $element['pair'] = array(
       '#type' => 'select',
-      '#options' => fxoptions(),
+      '#options' => drupal_map_assoc('none', 'EUR/USD' , 'USD/JPY',  'GBP/USD', 'AUD/USD', 'USD/CHF', 'NZD/USD'),
       '#title' => t('FX pair'),
       '#default_value' => 'none',
       '#weight' => -4,
@@ -198,24 +198,6 @@ function trade_table_field_widget_form(&$form, &$form_state, $field, $instance, 
 return $element;
 
 }
-
-
-/**
- * Our option array for $element['pair']
- */
-
-function fxoptions(){
-    return array(
-    'none'  => 'none', 
-    'EUR/USD' =>' EUR/USD', 
-    'USD/JPY' => 'USD/JPY', 
-    'GBP/USD' => 'GBP/USD', 
-    'AUD/USD' => 'AUD/USD', 
-    'USD/CHF' => 'USD/CHF', 
-    'NZD/USD' => 'NZD/USD',
-    );
-  }
-
 /**
  * Custom validation function for field_widget_form
  *
